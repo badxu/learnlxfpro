@@ -17,7 +17,13 @@ async def init(event_loop):
     app_runner = web.AppRunner(app)
     srv = await event_loop.create_server(app_runner.app.make_handler(), '127.0.0.1', 9000)
     logging.info('server started at http://127.0.0.1:9000...')
-    return srv
+
+    rs = dict()
+    rs['app'] = app
+    rs['srv'] = srv
+    rs['handler'] = handler
+    return rs
+    return 
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(init(loop))

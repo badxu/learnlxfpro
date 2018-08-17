@@ -9,11 +9,11 @@ async def create_pool(loop, **kw):
     logging.info('create database connection pool...')
     global __pool
     __pool = await aiomysql.create_pool(
-        host=kw.get('host', '111.38.56.61'),
-        port=kw.get('port', 33060),
-        user=kw['root'],
-        password=kw['wzh12346578'],
-        db=kw['test'],
+        host=kw.get('host', '192.168.40.16'),
+        port=kw.get('port', 3306),
+        user=kw['user'],
+        password=kw['password'],
+        db=kw['db'],
         charset=kw.get('charset', 'utf8'),
         autocommit=kw.get('autocommit', True),
         maxsize=kw.get('maxsize', 10),
