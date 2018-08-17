@@ -15,15 +15,18 @@ async def init(event_loop):
     app.router.add_route('GET', '/', index)
     #利用event_loop.creat_server()创建TCP服务
     app_runner = web.AppRunner(app)
-    srv = await event_loop.create_server(app_runner.app.make_handler(), '127.0.0.1', 9000)
+    handler = app.make_handler()
+    
+    #srv = await event_loop.create_server(app_runner.app.make_handler(), '127.0.0.1', 9000)
     logging.info('server started at http://127.0.0.1:9000...')
-
+    #modify by badxu for resolve dbaccess_test --loop is closed---
     rs = dict()
     rs['app'] = app
     rs['srv'] = srv
     rs['handler'] = handler
     return rs
-    return 
+    ############
+    #return srv
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(init(loop))
