@@ -222,3 +222,9 @@ class Model(dict, metaclass=ModelMetaclass):
         rows = await execute(self.__delete__, args)
         if rows != 1:
             logging.warning('failed to remove by primary key: affected rows: %s' % rows)
+
+async def close_pool():
+    logging.info('close database connection pool...')
+    global __pool
+    __pool.close()
+    await __pool.wait_closed()
