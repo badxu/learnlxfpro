@@ -1,6 +1,7 @@
 import asyncio, logging
 
 import aiomysql
+# __pool = {}
 
 def log(sql, args=()):
     logging.info('SQL: %s' % sql)
@@ -11,7 +12,7 @@ async def create_pool(loop, **kw):
     __pool = await aiomysql.create_pool(
         host=kw.get('host', '192.168.40.16'),
         port=kw.get('port', 3306),
-        user=kw['user'],
+        user=kw.get['user','root'],
         password=kw['password'],
         db=kw['db'],
         charset=kw.get('charset', 'utf8'),
