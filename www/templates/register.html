@@ -35,6 +35,7 @@ $(function () {
                     return $form.showFormError('两次输入的口令不一致');
                 }
                 var email = this.email.trim().toLowerCase();
+                // commit to 'api/users'
                 $form.postJSON('/api/users', {
                     name: this.name.trim(),
                     email: email,

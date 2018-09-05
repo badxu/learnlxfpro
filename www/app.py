@@ -6,8 +6,12 @@ from datetime import datetime
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
 
+from config import configs
+
 import orm
 from coroweb import add_routes, add_static
+
+from handlers import cookie2user, COOKIE_NAME
 
 def init_jinja2(app, **kw):
     logging.info('init jinja2...')
@@ -37,50 +41,22 @@ async def logger_factory(app, handler):
         return (await handler(request))
     return logger
 
-@asyncio.coroutine
-def auth_factory(app, handler):
-    @asyncio.coroutine
-    def auth(request):
+
+
+async def auth_factory(app, handler):
+    async def auth(request):
         logging.info('check user: %s %s' % (request.method, request.path))
         request.__user__ = None
         cookie_str = request.cookies.get(COOKIE_NAME)
         if cookie_str:
-            user = yield from cookie2user(cookie_str)
+            user = await cookie2user(cookie_str)
             if user:
                 logging.info('set current user: %s' % user.email)
                 request.__user__ = user
         if request.path.startswith('/manage/') and (request.__user__ is None or not request.__user__.admin):
             return web.HTTPFound('/signin')
-        return (yield from handler(request))
+        return (await handler(request))
     return auth
-
-# 解密cookie:
-@asyncio.coroutine
-def cookie2user(cookie_str):
-    '''
-    Parse cookie and load user if cookie is valid.
-    '''
-    if not cookie_str:
-        return None
-    try:
-        L = cookie_str.split('-')
-        if len(L) != 3:
-            return None
-        uid, expires, sha1 = L
-        if int(expires) < time.time():
-            return None
-        user = yield from User.find(uid)
-        if user is None:
-            return None
-        s = '%s-%s-%s-%s' % (uid, user.passwd, expires, _COOKIE_KEY)
-        if sha1 != hashlib.sha1(s.encode('utf-8')).hexdigest():
-            logging.info('invalid sha1')
-            return None
-        user.passwd = '******'
-        return user
-    except Exception as e:
-        logging.exception(e)
-        return None
 
 async def data_factory(app, handler):
     async def parse_data(request):
@@ -148,7 +124,7 @@ def datetime_filter(t):
 async def init(loop):
     await orm.create_pool(loop=loop, host='192.168.40.16', port=3306, user='root', password='wzh12346578', db='test')
     app = web.Application(loop=loop, middlewares=[
-        logger_factory, response_factory
+        logger_factory, response_factory,auth_factory
     ])
     init_jinja2(app, filters=dict(datetime=datetime_filter))
     add_routes(app, 'handlers')
