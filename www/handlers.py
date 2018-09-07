@@ -65,7 +65,7 @@ def index(request):
     return {
         '__template__': 'blogs.html',
         'blogs': blogs,
-        # '__user__': User
+         '__user__': request.__user__  ##get user information to forward
     }
 
 @get('/register')
