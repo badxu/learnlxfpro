@@ -15,6 +15,7 @@ function initVM(blog) {
         methods: {
             submit: function (event) {
                 event.preventDefault();
+                // '$' Distinguish vm property and dom property
                 var $form = $('#vm').find('form');
                 $form.postJSON(action, this.$data, function (err, r) {
                     if (err) {

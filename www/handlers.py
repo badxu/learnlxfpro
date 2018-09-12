@@ -7,13 +7,17 @@ import markdown2
 from aiohttp import web
 
 from coroweb import get, post
-from apis import APIValueError, APIResourceNotFoundError
+from apis import APIValueError, APIResourceNotFoundError,APIPermissionError
 
 from models import User, Comment, Blog, next_id
 from config import configs
 
 COOKIE_NAME = 'awesession'
 _COOKIE_KEY = configs.session.secret
+
+def check_admin(request):
+    if request.__user__ is None or not request.__user__.admin:
+        raise APIPermissionError()
 
 def user2cookie(user, max_age):
     '''
@@ -96,15 +100,15 @@ def signout(request):
 #     return dict(users=users)
 
 @get('/blog/{id}')
-def get_blog(id):
-    blog = yield from Blog.find(id)
-    comments = yield from Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
+async def get_blog(id):
+    blog = await Blog.find(id)
+    comments = await Comment.findAll('blog_id=?', [id], orderBy='created_at desc')
     for c in comments:
         c.html_content = text2html(c.content)
     blog.html_content = markdown2.markdown(blog.content)
     return {
-        '__template__': 'blog.html',
-        'blog': blog,
+        '__template__': 'blogs.html',
+        'blogs': blog,
         'comments': comments
     }
 @get('/api/blogs/{id}')
